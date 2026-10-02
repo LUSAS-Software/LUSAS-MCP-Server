@@ -23,27 +23,11 @@ Use an AI client with an open LUSAS model to:
 - **Produce model-specific outputs:** create tailored LUSAS scripts, reporting utilities, and result exports for the active model.
 - **Inspect safely:** use `read_only_mode` to expose model inspection and knowledge-discovery tools without allowing model changes.
 
-## What can I ask LUSAS MCP to do?
-
-From a natural-language engineering question to a repeatable LUSAS workflow, while keeping the engineer responsible for review and decisions.
-
-- “Inspect the open model and summarise its geometry, materials, loads, supports, mesh, and analyses.”
-
-- “Set up a linear buckling analysis and report the first five buckling load factors.”
-
-- “Find a suitable section and material from the LUSAS libraries, then assign them to the selected members.”
-
-- “Extract the midspan vertical displacement and support reactions after the gravity-load analysis.”
-
-- “Create inspection locations around the punching-shear perimeter and prepare a results-reporting utility.”
-
-- “Generate an LPython script for this workflow so I can review, reuse, and adapt it.”
-
 ## Requirements
 
 - Python 3.10 or later.
 - Python packages from `requirements.txt` (if MCPB package is not used).
-- Windows, a compatible installed version of LUSAS Modeller, and a valid LUSAS licence.
+- Windows, a compatible installed version of LUSAS, and a valid LUSAS licence.
 - Interacting with LUSAS requires you to manually open or create a model.
 
 The server will work with the free [evaluation licence](https://www.lusas.com/evaluation/index.html), however the use of a full or [academic](https://www.lusas.com/academic/index.html) licence is recommended. The latest LUSAS installer can be found [at the downloads section](https://www.lusas.com/user_area/download/index.html) of the official website.
@@ -59,7 +43,7 @@ Install required python dependencies:
 
 Server configuration lives in `src/config.json`, which can be edited as a text file:
 
-- Set `lusas.version` to match the installed LUSAS Modeller version (e.g. change from "24.0" to "23.0").
+- Set `lusas.version` to match the installed LUSAS version (e.g. change from "24.0" to "23.0").
 
 - When `read_only_mode` is enabled, the server does not register `LUSAS Code Interaction`, `Load Model Backup`, or the save/close lifecycle tools.
 
