@@ -7,11 +7,11 @@
 
 # LUSAS MCP Server
 
-**LUSAS MCP Server connects AI assistants to [LUSAS Modeller](https://www.lusas.com/)** for AI-assisted structural and civil finite element analysis. Engineers can inspect active models, search LUSAS documentation and libraries, generate LPython automation, run workflows, and extract engineering results.
+**LUSAS MCP Server connects AI assistants to [LUSAS](https://www.lusas.com/)** for AI-assisted structural and civil finite element analysis. Engineers can inspect active models, search LUSAS documentation and libraries, generate LPython (LUSAS Python) automation, run workflows, and extract engineering results.
 
 **AI-assisted. Engineer-reviewed. LUSAS-connected.**
 
-The server exposes a compact set of direct MCP tools for connection/model inspection, library lookups, reference search, and LUSAS code execution.
+The server exposes a compact set of direct MCP tools for connection/model inspection, library lookups, reference search, and LUSAS code execution (through the API, aka LPI, LUSAS Programmable Interface).
 ## Capabilities
 
 Use an AI client with an open LUSAS model to:
@@ -22,6 +22,22 @@ Use an AI client with an open LUSAS model to:
 - **Run and review analyses:** execute LUSAS workflows, read returned logs, and extract requested results such as reactions, displacements, stresses, buckling data, or modal results.
 - **Produce model-specific outputs:** create tailored LUSAS scripts, reporting utilities, and result exports for the active model.
 - **Inspect safely:** use `read_only_mode` to expose model inspection and knowledge-discovery tools without allowing model changes.
+
+## What can I ask LUSAS MCP to do?
+
+From a natural-language engineering question to a repeatable LUSAS workflow, while keeping the engineer responsible for review and decisions.
+
+- “Inspect the open model and summarise its geometry, materials, loads, supports, mesh, and analyses.”
+
+- “Set up a linear buckling analysis and report the first five buckling load factors.”
+
+- “Find a suitable section and material from the LUSAS libraries, then assign them to the selected members.”
+
+- “Extract the midspan vertical displacement and support reactions after the gravity-load analysis.”
+
+- “Create inspection locations around the punching-shear perimeter and prepare a results-reporting utility.”
+
+- “Generate an LPython script for this workflow so I can review, reuse, and adapt it.”
 
 ## Requirements
 
