@@ -7,7 +7,7 @@
 
 # LUSAS MCP Server
 
-LUSAS MCP Server connects AI assistants to [LUSAS Modeller](https://www.lusas.com/)** for AI-assisted structural and civil finite element analysis. Engineers can inspect active models, search LUSAS documentation and libraries, generate LPython automation, run workflows, and extract engineering results.
+**LUSAS MCP Server connects AI assistants to [LUSAS Modeller](https://www.lusas.com/)** for AI-assisted structural and civil finite element analysis. Engineers can inspect active models, search LUSAS documentation and libraries, generate LPython automation, run workflows, and extract engineering results.
 
 **AI-assisted. Engineer-reviewed. LUSAS-connected.**
 
