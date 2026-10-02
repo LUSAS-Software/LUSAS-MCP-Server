@@ -1,0 +1,73 @@
+#Creates a beam/shell slice utility along the selected line(s) and extracts results.
+$ENGINE=LPython
+
+# Check if at least a line is selected
+if selection().count("Line") == 0:
+    AfxMsgBox("No line selected. Please select at least one line.")
+    raise Exception() # Raise exception to stop the script
+
+# Get the first selected line
+target_lines : list[IFLine] = selection().getObjects("Line")
+
+
+# Create a beam/shell slice utility along target line(s)
+
+lineIDs = ";".join([str(line.getID()) for line in target_lines])  # IDs of the line(s) to which the slice is applied, separated by semicolons
+
+slice_type = 4              # Slices at constant spacing
+slice_distances = "2"       # Slices at 2m spacing
+include_points = False      # Additional slices at line points
+start_distance = 0
+about_neutral_axis = True
+use_effective_width = True  # Full group width
+effective_width = 2         # Slice width (if use_effective_width is True)
+only_whole_elements = False
+smooth_corners = True
+extent = 0                  # Extent, 0: full, 1: visible, 2: group, 3: results, or 4: selected
+groupName = "Beam 1"        # Name of the group to which the slice extends (if extent is 4 = group)
+rotation = 0                # Rotation of the slice plane about the line (degrees)
+
+# Create a beam/shell slice utility
+sliceUtil = db().createBeamShellSlice("Lines " + lineIDs)
+sliceUtil.setBeamShellSlice(slice_type, slice_distances, include_points, start_distance, about_neutral_axis, use_effective_width, 
+                            effective_width, only_whole_elements, smooth_corners, "Slice", extent, groupName, lineIDs, rotation)
+
+# Ensure utilities layer is visible so that slices are visible
+view().insertUtilitiesLayer()
+
+# Optionally, turn off display of the beam/shell slice planes
+#view().utilities().setBeamShellSliceOptions(False, False, False, False)
+
+
+# Show Fx results:
+entity = "Beam/Shell Slice Resultants"
+component = "Fx"
+
+# Ensure the active loadcase is solved before extracting results
+# (this is required to refresh the results before v25.0)
+if view().getActiveLoadset().getTypeCode() == 0:
+    lc : IFLoadcase = view().getActiveLoadset()
+    lc.getAnalysis().solve(True)
+    database().openAllResults(False)
+
+# Show results
+view().insertValuesLayer()
+values_layer = view().values()
+values_layer.setResultsTransformNone()
+values_layer.setResults(entity, component)
+values_layer.setShowAtBeamShellSlices()
+values_layer.setAssocOption("Single")
+
+
+# Get/Print all results at slices:
+
+resultsList = sliceUtil.getAllResults("abs")
+components = ["Fx", "Fy", "Fz", "Mx", "My", "Mz", "distance"]
+
+tw = getTextWindow()
+tw.writeLine("-" * 50)
+tw.writeLine(f"Beam/Shell Slice {sliceUtil.getName()} results:")
+tw.writeLine("Distance, Fx, Fy, Fz, Mx, My, Mz")
+for results in resultsList:
+    Fx, Fy, Fz, Mx, My, Mz, distance = results
+    tw.writeLine(f"{str(distance)}, {str(Fx)}, {str(Fy)}, {str(Fz)}, {str(Mx)}, {str(My)}, {str(Mz)}")

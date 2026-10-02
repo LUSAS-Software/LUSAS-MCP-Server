@@ -1,0 +1,29 @@
+{
+  "manifest_version": "0.4",
+  "name": "lusas-mcp",
+  "display_name": "LUSAS MCP",
+  "version": "1.0.2",
+  "description": "Interact with LUSAS FEA models through MCP.",
+  "author": {
+    "name": "LUSAS",
+    "email": "support@lusas.com",
+    "url": "https://lusas.com"
+  },
+  "icon": "icon.png",
+  "server": {
+    "type": "uv",
+    "entry_point": "src/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": ["run", "--directory", "${__dirname}", "src/server.py"]
+    }
+  },
+  "tools_generated": true,
+  "keywords": ["lusas", "fea", "structural-analysis", "engineering"],
+  "compatibility": {
+    "platforms": ["win32"],
+    "runtimes": {
+      "python": ">=3.10,<4"
+    }
+  }
+}

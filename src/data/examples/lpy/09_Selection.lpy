@@ -1,0 +1,36 @@
+#Example on how to select features (points, lines, surface, nodes, elements etc)
+$ENGINE=LPython
+
+#Clear selection
+selection().remove("all")
+
+#Select all points in the model
+selection().add(db().getObjects("Points"))
+
+#Similarly you can select all lines, surfaces, volumes, nodes, elements etc by changing the type in getObjects
+selection().add(db().getObjects("Surfaces"))
+
+#Select all features in the model
+selection().add("all")
+
+#Remove all surfaces from the selection
+selection().remove("Surfaces")
+
+#Keep only the surfaces in the selection (remove all other types)
+selection().keep("Surfaces")
+
+#Add everything in the selection but then keep only the lines
+selection().add("all").keep("Lines")
+
+#Select all point of a surface (LOF = Lower Order Feature)
+selection().keep("Surface", 1).addLOF("points")
+
+#Select all volumes from the selected surface  (HOF = Higher Order Feature)
+selection().keep("Surface", 1).addHOF("volumes")
+
+#Get elements from the selection
+#(Similarly you can select all points, lines, surfaces, volumes, nodes etc by changing the type in getObjects)
+elements = selection().getObjects("Elements")
+
+#Count number of nodes selected
+numNodes = selection().count("Nodes")

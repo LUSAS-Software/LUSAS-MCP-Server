@@ -1,0 +1,67 @@
+'Creates volumes by surfaces and by sweeping a surface
+$ENGINE=VBScript
+
+'Create an array of surfaces to be used in the volume creation
+
+' Get surfaces by their IDs
+Dim surfaces(5)
+Set surfaces(0) = db().getObject("surface", 1) 'Bottom Surface (z=0)
+Set surfaces(1) = db().getObject("surface", 2) 'Top Surface (z=1)
+Set surfaces(2) = db().getObject("surface", 3) 'Front Surface (y=0)
+Set surfaces(3) = db().getObject("surface", 4) 'Back Surface (y=1)
+Set surfaces(4) = db().getObject("surface", 5) 'Left Surface (x=0)
+Set surfaces(5) = db().getObject("surface", 6) 'Right Surface (x=1)
+
+
+'Create a Volumes from Surfaces
+
+' Create a geometryData object to contain all the settings for the geometry creation
+Set geom_data = newGeometryData()
+' set the options for creating geometries from surfaces
+Call geom_data.setCreateMethod("solidVolume")
+Call geom_data.setExtractAllVolumes()
+
+' create an object set to contain the surfaces and use this set to create the volume
+Set surfsObj = newObjectSet()
+Call surfsObj.add(surfaces)
+
+' Create the volume using the surfaces
+Set vlm = db().createVolume(geom_data).getObject("Volume")
+
+
+'Volume from Surface translational sweep
+
+' Create a surface to be used in the volume creation
+Set surface = surfaces(0) 'Bottom Surface
+
+' Sweep vector x, y, z
+vector = Array(0, 0, -1)
+
+' Create a translation attribute
+Set attr = db().createTranslationTransAttr("Temp_SweepTranslation", vector)
+Call attr.setSweepType("straight")
+Call attr.setHofType("Volume") ' Set target geometry
+
+Set geom_data = newGeometryData()
+Call geom_data.setMaximumDimension(3) ' Target geometries (0: Points, 1: Lines, 2: Surfaces)
+Call geom_data.setTransformation(attr)
+Call geom_data.sweptArcType("straight")
+
+' Create an object set to contain the points and be swept
+Set obs = newObjectSet().add(surface)
+
+' Perform the sweep, the returned object set will contain the created surfaces
+set objSet = obs.sweep(geom_data)
+
+' Delete the translation attribute
+Call db().deleteAttribute(attr)
+
+' (Optional) Print new line IDs
+newVolumes = objSet.getObjects("Volume")
+For Each volume in newVolumes
+    Call getTextWindow().writeLine("Volume " & volume.getID() & " created from sweep.")
+Next
+
+' (Optional) Set isometric view (top side view) and fit view
+call view().setIsometric()
+Call view().setScaledToFit(True)

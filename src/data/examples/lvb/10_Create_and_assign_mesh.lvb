@@ -1,0 +1,47 @@
+'Creates and assigns meshes to lines and surfaces, and gets the features the mesh is assigned on
+$ENGINE=VBScript
+
+' Get existing line, surface
+Set line1 = db().getObject("line", 1) 'get line with ID 1
+surfaces1 = Array(db().getObject("surface", 1)) 'get surface with ID 1
+
+
+'Create Line (beam) mesh
+Set lineMeshAttr = db().createMeshLine("Beam Mesh")
+
+' Set the element type and size of elements BMI21 = 2Node thick beam elements, 1m length (set model units)
+Call lineMeshAttr.setSize("BMI21", 1.0)
+
+' Assign the mesh to the line on loadcase 1
+Call lineMeshAttr.assignTo(line1, 1)
+
+
+'Create Surface (shell) mesh
+Set surfMeshAttr = db().createMeshSurface("Shell Mesh")
+' Set the element type and divisions of elements QTS4 = 4Node quadrilateral surface elements
+' 0 divisions in the u and v directions for automatic meshing
+Call surfMeshAttr.setRegular("QTS4", 0, 0, True)
+
+' Assign the mesh to the surface on loadcase 1
+Call surfMeshAttr.assignTo(surfaces1, 1)
+
+
+'Update the mesh to apply the changes
+Call db().updateMesh()
+
+
+'Get features (i.e. points, line, surfaces) where attribute is assigned
+
+' Get all objects on which surface mesh attribute is assigned
+set getAllAsgn = newAssignment().setConsiderAllAssigns(True)
+set allAttrAssignedObjSet = newObjectSet().add(surfMeshAttr, getAllAsgn)
+
+' Print number of geometries the attribute is assigned on
+Call getTextWindow().writeLine("Shell Mesh attribute is assigned on " & allAttrAssignedObjSet.count("all") & " features")
+
+' Or get line mesh attribute assigned objects for a specific loadcase:
+set getLcAsgn = newAssignment().setLoadset("Loadcase 1")
+set lc1AttrAssignedObjSet = newObjectSet().add(lineMeshAttr, getLcAsgn)
+
+' Print number of geometries the attribute is assigned for loadcase 1
+Call getTextWindow().writeLine("Beam Mesh attribute is assigned on " & lc1AttrAssignedObjSet.count("all") & " features (Loadcase 1)")

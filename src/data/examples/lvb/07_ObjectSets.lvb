@@ -1,0 +1,151 @@
+'Example on how to use ObjectSets (Database, Groups, Selection etc) to filter features (points, lines, surface, nodes, elements etc)
+$ENGINE=VBScript
+
+'Get model objects by type
+
+' Get model database (which is a special type of IFObjectSet)
+Set object_set = database
+
+' Get all nodes
+nodes = object_set.getObjects("Nodes")
+
+' Get all elements
+elements = object_set.getObjects("Elements")
+
+' Get all points
+points = object_set.getObjects("Points")
+
+' Get all lines
+lines = object_set.getObjects("Lines")
+
+' Get all surface
+surfaces = object_set.getObjects("Surfaces")
+
+' Get all volumes
+volumes = object_set.getObjects("Volumes")
+
+' (Optional) Print number of geometries
+Call getTextWindow().writeLine("The model contains:")
+Call getTextWindow().writeLine(" - " & object_set.count("Nodes") & " Nodes")
+Call getTextWindow().writeLine(" - " & object_set.count("Elements") & " Elements")
+Call getTextWindow().writeLine(" - " & object_set.count("Points") & " Points")
+Call getTextWindow().writeLine(" - " & object_set.count("Lines") & " Lines")
+Call getTextWindow().writeLine(" - " & object_set.count("Surfaces") & " Surfaces")
+Call getTextWindow().writeLine(" - " & object_set.count("Volumes") & " Volumes")
+
+' Get features by ID
+If db().exists("point", 1) Then
+    Call getTextWindow().writeLine("Point 1 exists!")
+    Set point1 = db().getObject("point", 1)
+Else
+    Call getTextWindow().writeLine("Point 1 does not exist!")
+End IF
+
+'Add and remove objects from sets
+
+' Create a new object set
+Set new_object_set = newObjectSet()
+
+if UBound(points) + 1 > 0 Then
+    ' Add points in the object set
+    Call new_object_set.add(points)
+    ' But remove the first
+    Call new_object_set.remove(points(0))
+End If
+
+Call getTextWindow().writeLine("The new object set now contains " & new_object_set.count("Points") & " / " & UBound(points) + 1 & " Points")
+
+
+' Object sets can also be used to access lower or higher order features (e.g. the lines of a surface, or the volumes that contain the included surfaces).
+
+' Add higher order Line features (the lines using the object set contained points)
+Call new_object_set.addHOF("Lines")
+
+Call getTextWindow().writeLine("The new object set now contains " & new_object_set.count("Points") & " Points and " & new_object_set.count("Lines") & "  Lines")
+
+' Keep only the lines
+Call new_object_set.keep("Lines")
+Call getTextWindow().writeLine("The new object set now contains " & new_object_set.count("Points") & " Points and " & new_object_set.count("Lines") & "  Lines")
+
+' Add lower order Point features (points of included lines)
+Call new_object_set.addLOF("Points")
+Call getTextWindow().writeLine("The new object set now contains " & new_object_set.count("Points") & " Points and " & new_object_set.count("Lines") & "  Lines")
+
+
+'Groups
+
+' Create an empty group
+Set groupVlms = db().createEmptyGroup("Volumes")
+
+' Add volumes in the group (groups are special types of object sets, so they share the same methods)
+Call groupVlms.add(volumes)
+Call getTextWindow().writeLine("Group Volumes now contains " & groupVlms.count("all") & " feature(s)")
+
+' Create group with features in one line
+Set groupSurfaces = db().createGroup("Surfaces", surfaces)
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")
+
+' Add relevant points in the surfaces group
+Call groupSurfaces.addLOF("Points")
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")
+
+' Now remove all points from the Surfaces group
+Call groupSurfaces.remove("Points")
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")
+
+
+'Selection
+
+' Ensure selection is empty (which is also an object set!)
+Call selection().remove("all")
+
+' Add all points to selection
+Call selection().add(db().getObjects("Points"))
+
+' Print number of selected features
+Call getTextWindow().writeLine("Selection contains " & selection().count("all") & " feature(s)")
+
+
+'Geometry filtering - Get volume top points example
+
+' 1. Get all volume points by adding it in an objectSet
+Set temp_object_set = newObjectSet().add(volumes(0)).addLOF("Points")
+volumePoints = temp_object_set.getObjects("Points")
+
+' 2. Print points info
+Call getTextWindow().writeLine("Volume points:")
+For Each point in volumePoints
+    Call getTextWindow().writeLine(" - ID: " & point.getID() & ", x: " & point.getX() & ", y: " & point.getY() & ", z: " & point.getZ())
+Next
+
+' 3. Get max Z coordinate
+maxZ = volumePoints(0).getZ()
+For Each point in volumePoints
+    z = point.getZ()
+    If z > maxZ Then
+        maxZ = z
+    End If
+Next
+Call getTextWindow().writeLine("Max Z: " & maxZ)
+
+' 4. Get all points close to max Z (geometric comparison should always be done base on a tolerance)
+tolerance = 0.000001
+Set topPointsObjSet = newObjectSet()
+Call getTextWindow().writeLine("Top volume points:")
+For Each point in volumePoints
+    ' Check if close to top
+    If abs(point.getZ() - maxZ) <= tolerance Then
+        ' Add point in the list
+        Call topPointsObjSet.add(point)
+        Call getTextWindow().writeLine(" - ID: " & point.getID() & ", x: " & point.getX() & ", y: " & point.getY() & ", z: " & point.getZ())
+    End If
+Next
+
+' 5. Select top points
+Call selection().remove("all")
+if topPointsObjSet.count("Points") > 0 Then
+    Call selection().add(topPointsObjSet)
+End If
+
+'Get all geometries with an assigned attribute
+Set all_object_set = newObjectSet().add(myAttribute, newAssignment().setConsiderAllAssigns(True))

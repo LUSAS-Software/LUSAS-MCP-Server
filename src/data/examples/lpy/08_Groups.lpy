@@ -1,0 +1,30 @@
+# Example on how to use Groups
+$ENGINE=LPython
+
+#IFGroups are special types of IFObjectSets
+
+#Get all surface
+surfaces : list["IFSurface"] = db().getObjects("Surfaces")
+
+#Get all volumes
+volumes : list["IFVolume"] = db().getObjects("Volumes")
+
+
+#Create an empty group
+groupVlms = db().createEmptyGroup("Volumes")
+
+#Add volumes in the group (groups are special types of object sets, so they share the same methods)
+groupVlms.add(volumes)
+getTextWindow().writeLine(f"Group Volumes now contains {groupVlms.count("all")} feature(s)")
+
+#Create group with features in one line
+groupSurfaces = db().createGroup("Surfaces", surfaces)
+getTextWindow().writeLine(f"Group Surfaces now contains {groupSurfaces.count("all")} feature(s)")
+
+#Add relevant points in the surfaces group
+groupSurfaces.addLOF("Points")
+getTextWindow().writeLine(f"Group Surfaces now contains {groupSurfaces.count("all")} feature(s)")
+
+#Now remove all points from the Surfaces group
+groupSurfaces.remove("Points")
+getTextWindow().writeLine(f"Group Surfaces now contains {groupSurfaces.count("all")} feature(s)")

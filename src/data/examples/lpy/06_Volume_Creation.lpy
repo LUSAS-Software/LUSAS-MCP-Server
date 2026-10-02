@@ -1,0 +1,70 @@
+#Creates volumes by surfaces and by sweeping a surface
+$ENGINE=LPython
+
+# Libraries:
+# LUSAS LPY module (better autocomplete)
+from lusas.LPY import *
+
+# Create a Volumes from Surfaces
+
+# Create a list of surfaces to be used in the volume creation
+surfaces = [
+    db().getObject("surface", 1), # Bottom Surface (z=0)
+    db().getObject("surface", 2), # Top Surface (z=1)
+    db().getObject("surface", 3), # Front Surface (y=0)
+    db().getObject("surface", 4), # Back Surface (y=1)
+    db().getObject("surface", 5), # Left Surface (x=0)
+    db().getObject("surface", 6)  # Right Surface (x=1)
+]
+
+# Create a geometryData object to contain all the settings for the geometry creation
+geom_data = newGeometryData()
+# set the options for creating geometries from surfaces
+geom_data.setCreateMethod("solidVolume")
+geom_data.setExtractAllVolumes()
+
+# create an object set to contain the surfaces and use this set to create the volume
+surfsObj = newObjectSet()
+surfsObj.add(surfaces)
+
+# Create the volume using the surfaces
+vlm : IFVolume = db().createVolume(geom_data).getObject("Volume")
+getTextWindow().writeLine(f"Volume {vlm.getID()} created by surfaces.")
+
+
+# Volume from Surface translational sweep
+
+# Create a surface to be used in the volume creation
+surface = surfaces[0] # Bottom Surface
+
+# Sweep vector x, y, z
+vector = [0, 0, -1]
+
+# Create a translation attribute
+attr = db().createTranslationTransAttr("Temp_SweepTranslation", vector)
+attr.setSweepType("straight")
+attr.setHofType("Volume") # Set target geometry
+
+geomData = newGeometryData()
+geomData.setMaximumDimension(3) # Target geometries (0: Points, 1: Lines, 2: Surfaces)
+geomData.setTransformation(attr)
+geomData.sweptArcType("straight")
+
+# Create an object set to contain the points and be swept
+obs = newObjectSet().add(surface)
+
+# Perform the sweep, the returned object set will contain the created surfaces
+objSet = obs.sweep(geomData)
+
+# Delete the translation attribute
+db().deleteAttribute(attr)
+
+# Print new line IDs
+newVolumes : list[IFVolume] = objSet.getObjects("Volume")
+for volume in newVolumes:
+    getTextWindow().writeLine(f"Volume {volume.getID()} created by sweep.")
+
+
+# Set isometric view (top side view) and fit view
+view().setIsometric()
+view().setScaledToFit(True)

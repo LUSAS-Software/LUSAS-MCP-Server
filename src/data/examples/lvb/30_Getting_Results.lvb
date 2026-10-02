@@ -1,0 +1,198 @@
+'Extract nodal and element results.
+'This example does the extraction in different approaches. It is recommended to use the results component set approach for most cases.
+'To compare the different approaches, it is recommended that the Jupyter Notebook example is used instead.
+
+$ENGINE=VBScript
+
+' This function checks if a value is NaN (Not a Number) accounting for LUSAS Modeller NA value equal to 2.2250738585072014e-308.
+Function isNan(value)
+    ' Check if value is NaN/Null
+    ' Also check for the specific LUSAS Modeller NA value
+    isNan = IsNull(value) Or (value = 2.2250738585072014E-308)
+End Function
+
+' To successfully run the code below you must have a model solved (e.g. the model generated from example 15).
+' Check if a model is open:
+If not existsDatabase() Then
+    Call Err.Raise(vbObjectError + 10, "Example Script", vbCrLf & "A model must be open before running this code" & vbCrLf)
+End If
+
+' Get selected items and add related Elements and Nodes
+Set target = newObjectSet().add(selection()).addLOF("Element").addLOF("Node")
+targetNodes = selection().getObjects("Node")
+targetElements = target.getObjects("Element")
+
+If Ubound(targetNodes) + 1 = 0 Then
+    Call Err.Raise(vbObjectError + 10, "Example Script", vbCrLf & "No features selected. Please select some elements/nodes to get results from." & vbCrLf)
+End If
+
+'Nodal Results
+' All nodes have displacement results. Here we simply loop through the nodes contained in the current selection and ask for the results of displacement and printing them
+
+' Print displacements (model units)
+clockStart() 'Start timer to measure execution time
+Call getTextWindow().writeLine("Displacement results:")
+For Each n in targetNodes
+    dx = n.getResults("Displacement", "DX")
+    dy = n.getResults("Displacement", "DY")
+    dz = n.getResults("Displacement", "DZ")
+    Call getTextWindow().writeLine(dx & ", " & dy & ", " & dz)
+Next
+clockEnd("Print displacements from nodes") 'Print execution time
+
+' Print reactions and calculate total reactions (model units)
+clockStart() 'Start timer to measure execution time
+total_fx = 0.0
+total_fy = 0.0
+total_fz = 0.0
+Call getTextWindow().writeLine("") ' Add a blank line to the output window
+Call getTextWindow().writeLine("Reaction results:")
+For Each n in targetNodes
+    ' Non supported nodes will return a value of 2.2250738585072014e-308. This is the smallest possible value represented by a 64bit double precision variable.
+    ' We can avoid this small value by asking if a result is available
+    ' This can also be checked using the isNan() function.
+    fx = n.getResults("Reaction", "FX")
+    If fx = 2.2250738585072014e-308 Then
+        fx = 0.0
+    End If
+    fy = n.getResults("Reaction", "FY")
+    If isNan(fy) Then
+        fy = 0.0
+    End If
+    fz = n.getResults("Reaction", "FZ")
+    If isNan(fz) Then
+        fz = 0.0
+    End If
+    Call getTextWindow().writeLine(fx & ", " & fy & ", " & fz)
+
+    total_fx = total_fx + fx
+    total_fy = total_fy + fy
+    total_fz = total_fz + fz
+Next
+
+' Print total reactions (model units)
+Call getTextWindow().writeLine("Total reactions of selected nodes : " & fx & ", " & fy & ", " & fz)
+clockEnd("Print reactions from nodes") 'Print execution time
+
+' NOTE:
+' The getResults function has 3 additional optional arguments as shown in the LPI Reference manual
+' `getResults(entity, component, [units], [loadcase], [context])`
+' 
+' The results we have been getting so far have been in model units and for the active loadset. 
+' The first additional argument allows us to ask for results in a different unit set.
+' The second additional argument is actually a return value that is used when the active loadset is an envelope. In this case the loadcase causing the requested results is returned through this argument.
+' The third argument allows us to specify other settings for the results such as a different loadset. We will return to resultsets later.
+
+
+'Element Results
+
+' Elements do not have a getResults() function like nodes because elements have many different types of results. Shells beams, solids and joint elements all have different results and result locations.
+' 
+' A beam element for example has results at each node, it also has a series of intermediate or "internal" results.
+' A shell element also nodal results at each node but it does not have internal results, instead it has additional results at the gauss/integration points 
+' 
+' The element interface therefore has several functions to deal with these differences and its up to you to call the correct one for the element you are looking at.
+' 
+' If we ask the database for all elements, that's exactly what we'll get and we'd have to write a lot of code to handle the various element types as follows:
+clockStart() 'Start timer to measure execution time
+
+Call getTextWindow().writeLine("") ' Add a blank line to the output window
+Call getTextWindow().writeLine("Force/Moment results: (from beam elements)")
+For Each e in targetElements
+    stressType = e.getStressType()
+    if e.getDomainDimension() = 1 Then ' Beam Element
+        if stressType = "Thick 3D Beam" Then
+            ' Get bending moment My for each internal point
+            'For i = 0 To e.countInternalPoints() - 1
+            '    my = e.getInternalResults(i, "Force/Moment - Thick 3D Beam", "My")
+            '    Call getTextWindow().writeLine(my)
+            'Next
+            ' Or get the internal results as an array
+            my = e.getInternalResultsArray("Force/Moment - Thick 3D Beam", "My")
+            Call getTextWindow().writeLine(Join(my, ", "))
+        End If
+    ElseIf e.getDomainDimension() = 2 Then ' Shell Element
+        ' Do nothing
+    ElseIf e.getDomainDimension() = 3 Then ' Solid Element
+        ' Do nothing
+    End If
+Next
+clockEnd("Print Force/Moment from beam elements") 'Print execution time
+
+' The above can be repeated for all element types but you may have noticed that this approach is very slow and not recommended.
+' A much better approach is to use results component sets.
+
+
+'Results Component Sets
+' A results component set is a container for a particular set of results. It is much more efficient than asking for results all at once.
+clockStart() 'Start timer to measure execution time
+
+' Get the internal point results for all thick beam elements
+Set results_my = database().getResultsComponentSet("Force/Moment - Thick 3D Beam", "My", "Internal")
+i_my = results_my.getComponentNumber("My")
+
+Call getTextWindow().writeLine("") ' Add a blank line to the output window
+Call getTextWindow().writeLine("Force/Moment results: (from beam elements using ResultsComponentSet)")
+For Each e in targetElements
+    stressType = e.getStressType()
+    if e.getDomainDimension() = 1 Then ' Beam Element
+        if stressType = "Thick 3D Beam" Then
+            ' Note the unitset is not optional but providing Nothing uses the current database units
+            my = results_my.getInternalResultsArray(i_my, e, Nothing)
+            Call getTextWindow().writeLine(Join(my, ", "))
+        End If
+    End If
+Next
+clockEnd("Print Force/Moment from beam elements using ResultsComponentSet") 'Print execution time
+
+'# Instead of checking all elements and their type, we can filter them using an Object Set.
+' Depending on what your model contains the following code should run much quicker than previous methods. This is because we filtered out only the elements of interest and removed any subsequent type checking.
+clockStart() 'Start timer to measure execution time
+
+' Create an object set containing only the thick 3d beam elements.
+Set beamsObjSet = newObjectSet().add(targetElements).keep("Thick 3D Beam")
+
+' Get the internal point results for all thick beam elements
+Call getTextWindow().writeLine("") ' Add a blank line to the output window
+Call getTextWindow().writeLine("Force/Moment results: (from ObjectSet using ResultsComponentSet)")
+For Each e in beamsObjSet.getObjects("Element")
+    ' Note the unitset is not optional but providing Nothing uses the current database units
+    my = results_my.getInternalResultsArray(i_my, e, Nothing)
+    Call getTextWindow().writeLine(Join(my, ", "))
+Next
+clockEnd("Print Force/Moment from ObjectSet using ResultsComponentSet") 'Print execution time
+
+' Remember clear the results component set if not used again to free up memory (commented in this case since we are using it again)
+'results_my = Nothing 
+
+
+'# The final piece of the puzzle is to provide a results context.
+' Results context can be set to any loadcase and set of elements so we are no longer relying on the active settings of the user interface.
+clockStart() 'Start timer to measure execution time
+
+' Create a results context for the beam elements
+Set context = newResultsContext(Nothing)
+' Set target elements
+Call context.getCalcResultsSet().add(beamsObjSet)
+' Set loadset 1 as the active loadset of the context
+Call context.setActiveLoadset(1)
+
+' Get the internal point results for the set context
+Set results_my = database().getResultsComponentSet("Force/Moment - Thick 3D Beam", "My", "Internal", context)
+
+Call getTextWindow().writeLine("") ' Add a blank line to the output window
+Call getTextWindow().writeLine("Force/Moment results: (from ObjectSet using ResultsComponentSet and set context)")
+For Each e in beamsObjSet.getObjects("Element")
+    ' Note the unitset is not optional but providing None uses the current database units
+    my = results_my.getInternalResultsArray(i_my, e, Nothing)
+    Call getTextWindow().writeLine(Join(my, ", "))
+Next
+clockEnd("Print Force/Moment from ObjectSet using ResultsComponentSet and set context") 'Print execution time
+
+' Free up memory if the script will continue to run (not required in this case
+Set results_my = Nothing
+Set context = Nothing
+Set beamsObjSet = Nothing
+
+
+' The general principle laid out above can be used for all elements, nodes and inspection location results.

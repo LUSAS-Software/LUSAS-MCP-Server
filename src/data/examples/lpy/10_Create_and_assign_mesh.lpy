@@ -1,0 +1,43 @@
+#Creates and assigns meshes to lines and surfaces, and gets the features the mesh is assigned on
+$ENGINE=LPython
+
+# Get existing line, surface
+line1 = db().getObject("line", 1) #get line with ID 1
+surfaces1 = [db().getObject("surface", 1)] #get surface with ID 1
+
+
+# Create Line (beam) mesh
+lineMeshAttr = db().createMeshLine("Beam Mesh")
+
+# Set the element type and size of elements BMI21 = 2Node thick beam elements, 1m length (set model units)
+lineMeshAttr.setSize("BMI21", 1.0)
+
+# Assign the mesh to the line on loadcase 1
+lineMeshAttr.assignTo(line1, 1)
+
+
+# Create Surface (shell) mesh
+surfMeshAttr = db().createMeshSurface("Shell Mesh")
+# Set the element type and divisions of elements QTS4 = 4Node quadrilateral surface elements
+# 0 divisions in the u and v directions for automatic meshing
+surfMeshAttr.setRegular("QTS4", 0, 0, True)
+
+# Assign the mesh to the surfaces on loadcase 1
+surfMeshAttr.assignTo(surfaces1, 1)
+
+
+# Update the mesh to apply the changes
+db().updateMesh()
+
+
+# Get features (i.e. points, line, surfaces) where attribute is assigned
+
+# Get all objects on which the thickness attribute is assigned
+getAsgn = newAssignment().setConsiderAllAssigns(True)
+assignedObjSet = newObjectSet().add(surfMeshAttr, getAsgn)
+
+# To get the assigned objects for a specific loadcase, the loadcase can be specified with the setLoadset() method, for example:
+# getAsgn = newAssignment().setLoadset("Loadcase 1")
+
+# Print number of geometries the attribute is assigned on
+getTextWindow().writeLine(surfMeshAttr.getName() + " attribute is assigned on " + str(assignedObjSet.count("all")) + " features")

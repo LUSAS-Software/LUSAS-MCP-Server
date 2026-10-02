@@ -1,0 +1,30 @@
+' Example on how to use Groups
+$ENGINE=VBScript
+
+'IFGroups are special types of IFObjectSets
+
+'Get all surface
+Set surfaces = db().getObjects("Surfaces")
+
+'Get all volumes
+Set volumes = db().getObjects("Volumes")
+
+
+'Create an empty group
+Set groupVlms = db().createEmptyGroup("Volumes")
+
+'Add volumes in the group (groups are special types of object sets, so they share the same methods)
+Call groupVlms.add(volumes)
+Call getTextWindow().writeLine("Group Volumes now contains " & groupVlms.count("all") & " feature(s)")
+
+'Create group with features in one line
+Set groupSurfaces = db().createGroup("Surfaces", surfaces)
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")
+
+'Add relevant points in the surfaces group
+Call groupSurfaces.addLOF("Points")
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")
+
+'Now remove all points from the Surfaces group
+Call groupSurfaces.remove("Points")
+Call getTextWindow().writeLine("Group Surfaces now contains " & groupSurfaces.count("all") & " feature(s)")

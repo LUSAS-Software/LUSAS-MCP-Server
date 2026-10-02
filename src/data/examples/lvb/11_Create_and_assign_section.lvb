@@ -1,0 +1,100 @@
+'Creates and assigns a section to a line, creates and assigns thickness to a surface, and gets the features the section is assigned on
+$ENGINE=VBScript
+
+' Get existing line, surface
+Set line1 = db().getObject("line", 1) 'get line with ID 1
+surfaces1 = Array(db().getObject("surface", 1)) 'get surface with ID 1
+
+
+'Geometric Line (beam) section using the section library
+
+' Create a geometric attribute object
+Set beamSection = db().createGeometricLine("Geometric Line from Library")
+' Set the element type
+Call beamSection.setValue("elementType", "3D Thick Beam")
+
+' Set section from library (library name, library type, section name, as shown in the LUSAS GUI)
+sectionNo = 0 ' 0 for first section (uniform if no other sections are defined)
+rotation = 1 ' Rotation of the section about the local x-axis (1 = 90 degrees)
+Call beamSection.setFromLibrary("UK Sections", "Universal Beams (BS4)", "305x165x46kg UB", rotation, 0, sectionNo)
+
+' Assign the mesh to the line on loadcase 1
+Call beamSection.assignTo(line1, 1)
+
+
+'Geometric Line (beam) section with custom properties
+
+' Create a geometric attribute object
+Set customSection = db().createGeometricLine("Geometric Line from Properties")
+' Set the element type
+Call customSection.setValue("elementType", "3D Thick Beam")
+
+' Set custom properties (in model units)
+Area = 5.87461E-3 ' Cross-sectional area
+Iyy = 98.9866E-6 ' Moment of inertia about the y-axis
+Izz = 8.95665E-6 ' Moment of inertia about the z-axis
+Iyz = 0.0 ' Product of inertia about the y and z axes
+J_const = 0.224843E-6 ' Torsional constant
+Asz = 3.39835E-3 ' Shear area about the z-axis
+Asy = 1.97516E-3 ' Shear area about the y-axis
+ey = 0.0 ' Distance from the centroid to the top of the section in the y-direction
+ez = 0.0 ' Distance from the centroid to the top of the section in the z-direction
+sectionNo = 0 ' 0 for first section (uniform if no other sections are defined)
+Call customSection.setBeam(Area, Iyy, Izz, Iyz, J_const, Asz, Asy, ey, ez, sectionNo)
+
+' To assign the mesh to the line on loadcase 1, the following command could be used
+' Call customSection.assignTo(line1, 1)
+
+
+'Geometric Line (beam) section with parametric section
+
+' Create the Rectangular Solid Section (utility)
+set rectSection = db().createParametricSection("Sct1").setType("Rectangular Solid")
+' Set the section properties (in model units) - breath 0.4 and depth 0.6
+names = Array("B", "D")
+values = Array(0.4, 0.6)
+call rectSection.setDimensions(names, values)
+
+' Create a geometric attribute object and set the parametric section
+set paramSection = db().createGeometricLine("LGeo1")
+call paramSection.setValue("elementType", "3D Thick Beam")
+call paramSection.setFromLibrary("Utilities", "", "Sct1", 0, 0, 0)
+
+' To assign the mesh to the line on loadcase 1, the following command could be used
+' Call paramSection.assignTo(line1, 1)
+
+
+'Surface thickness
+
+' Create a geometric attribute object
+Set thicknessAttr = db().createGeometricSurface("Thickness")
+' Set thickness and eccentricity (in model units)
+t = 0.1 ' Thickness
+ec = 0.0 ' Eccentricity
+Call thicknessAttr.setSurface(t, ec)
+
+' Assign thickness to the surface on loadcase 1
+Call thicknessAttr.assignTo(surfaces1, 1)
+
+
+'Create/Assign mesh and enable fleshing to draw sections (1.0m element size)
+Call db().createMeshLine("Dummy Line Mesh").setSize("BMI21", 1.0).assignTo(line1, 1)
+Call db().createMeshSurface("Dummy Surface Mesh").setRegular("QTS4", 0, 0, True).assignTo(surfaces1, 1)
+Call db().updateMesh()
+
+Call view().attributes().setVisible(True)
+Call view().attributes().setDrawStyle("Geometric", "Arrows")
+Call view().attributes().visualiseAll("Geometric")
+
+
+'Get features (i.e. points, line, surfaces) where attribute is assigned
+
+' Get all objects on which the thickness attribute is assigned
+set getAsgn = newAssignment().setConsiderAllAssigns(True)
+set assignedObjSet = newObjectSet().add(thicknessAttr, getAsgn)
+
+' To get the assigned objects for a specific loadcase, the loadcase can be specified with the setLoadset() method, for example:
+' set getAsgn = newAssignment().setLoadset("Loadcase 1")
+
+' Print number of geometries the attribute is assigned on
+Call getTextWindow().writeLine(thicknessAttr.getName() & " attribute is assigned on " & assignedObjSet.count("all") & " features")

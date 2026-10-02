@@ -1,0 +1,31 @@
+'Creates analyses, loadcases and solves them
+$ENGINE=VBScript
+
+'Create new structural analysis
+
+analysisName = "New Structural Analysis"
+Set structAnalysis = database().createAnalysisStructural(analysisName, True)
+
+' Create additional loadcase in the analysis
+Set newLoadcase = database().createLoadcase("Self-weight", analysisName)
+' Enable gravity in self-weight loadcase
+Call newLoadcase.addGravity(True)
+Call newLoadcase.setGravityFactor(1.0)
+
+' Get list of loadcase objects from analysis
+loadcases = db().getLoadsets("loadcase", "all", analysisName)
+' Or get them from the analysis (v22.0+)
+'loadcases = structAnalysis.getLoadcases()
+
+' Print loadcase names
+Call getTextWindow().writeLine("Analysis " & structAnalysis.getName() & " loadcases:")
+For Each loadcase in loadcases
+    Call getTextWindow().writeLine(" - " & loadcase.getID() & ": " & loadcase.getName())
+Next
+
+'Solve structural analysis
+
+Call database().getAnalysis(analysisName).solve(False)
+
+' Open available results
+Call database().openAllResults(False)

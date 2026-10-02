@@ -1,0 +1,57 @@
+#Creates and assigns loads in the running LUSAS model
+$ENGINE=LPython
+
+# Get slab-surface, columns-lines, and column top points
+surface1 = db().getObject("surface", 1) #get surface with ID 1
+surfPoints = newObjectSet().add(surface1).addLOF("Points").getObjects("Point")
+topPoints = newObjectSet().add("point", 1).add("point", 2).add("point", 3).add("point", 4).getObjects("Point")
+lines = newObjectSet().add(topPoints).addHOF("Lines").getObjects("Line")
+
+
+# Create Point load
+
+Fx = 0.0 # Load in X direction
+Fy = 0.0 # Load in Y direction
+Fz = -100.0 # Load in Z direction (negative value = downwards)
+Mx = 0.0 # Moment about X axis
+My = 0.0 # Moment about Y axis
+Mz = 0.0 # Moment about Z axis
+
+pointLoadAttr = db().createLoadingConcentrated("Example Vertical Point Load")
+pointLoadAttr.setConcentrated(Fx, Fy, Fz, Mx, My, Mz)
+
+# Assign on all column top points for loadcase 1
+pointLoadAttr.assignTo(topPoints, 1)
+
+
+# Create Distributes load
+
+distrType = "Area" # Load distribution type: "Total" for total load, "Length" for length distribution, "Area" for area distribution
+wx = 0.0 # Load in X direction
+wy = 0.0 # Load in Y direction
+wz = -100.0 # Load in Z direction (negative value = downwards)
+
+distrLoadAttr = db().createLoadingGlobalDistributed("GlbD2")
+distrLoadAttr.setGlobalDistributed(distrType, wx, wy, wz)
+
+# Assign on slab for loadcase 1
+distrLoadAttr.assignTo(surfPoints, 1)
+
+
+# Create/Assign mesh so that loads are visualised (1.0m element size)
+db().createMeshLine("Dummy Line Mesh").setSize("BMI21", 1).assignTo(lines, 1)
+db().createMeshSurface("Dummy Surface Mesh").setRegular("QTS4", 0, 0, True).assignTo(surface1, 1)
+db().updateMesh()
+
+
+# Get features (i.e. points, line, surfaces) where attribute is assigned
+
+# Get all objects on which the thickness attribute is assigned
+getAsgn = newAssignment().setConsiderAllAssigns(True)
+assignedObjSet = newObjectSet().add(distrLoadAttr, getAsgn)
+
+# To get the assigned objects for a specific loadcase, the loadcase can be specified with the setLoadset() method, for example:
+# getAsgn = newAssignment().setLoadset("Loadcase 1")
+
+# Print number of geometries the attribute is assigned on
+getTextWindow().writeLine(distrLoadAttr.getName() + " attribute is assigned on " + str(assignedObjSet.count("all")) + " features")

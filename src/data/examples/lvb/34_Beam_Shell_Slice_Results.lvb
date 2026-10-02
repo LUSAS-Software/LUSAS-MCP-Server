@@ -1,0 +1,95 @@
+'Creates a beam/shell slice utility along the selected line(s) and extracts results.
+$ENGINE=VBScript
+
+' Check whether at least one line is selected
+If selection().count("Line") = 0 Then
+    Call Err.Raise(vbObjectError + 10, "Example Script", vbCrLf & "No line selected. Please select at least one line." & vbCrLf)
+End If
+
+' Get the selected lines
+targetLines = selection().getObjects("Line")
+
+
+' Create a beam/shell slice along the selected lines
+' Build a semicolon-separated list of line IDs
+lineIDs = ""
+For Each targetLine In targetLines
+    If Len(lineIDs) > 0 Then
+        lineIDs = lineIDs & ";"
+    End If
+
+    lineIDs = lineIDs & CStr(targetLine.getID())
+Next
+
+
+sliceType = 4               ' Slices at constant spacing
+sliceDistances = "2"        ' Slices at 2 m spacing
+includePoints = False       ' Additional slices at line points
+startDistance = 0
+aboutNeutralAxis = True
+useEffectiveWidth = True    ' Full group width
+effectiveWidth = 2          ' Slice width when effective width is used
+onlyWholeElements = False
+smoothCorners = True
+extent = 0                  ' Extent, 0: full, 1: visible, 2: group, 3: results, or 4: selected
+groupName = "Beam 1"
+rotation = 0                ' Rotation about the line, in degrees
+
+' Create the beam/shell slice utility
+Set sliceUtil = db().createBeamShellSlice("Lines " & lineIDs)
+
+Call sliceUtil.setBeamShellSlice(sliceType, sliceDistances, includePoints, startDistance, aboutNeutralAxis, useEffectiveWidth, _
+    effectiveWidth, onlyWholeElements, smoothCorners, "Slice", extent, groupName, lineIDs, rotation)
+
+' Ensure the utilities layer is visible
+Call view().insertUtilitiesLayer()
+call visible().add("Beam/Shell Slicing", "Lines " + lineIDs) 'Not working
+
+
+' Show Fx results
+entity = "Beam/Shell Slice Resultants"
+component = "Fx"
+
+' Ensure that an active loadcase has been solved
+' Required to refresh results in versions before LUSAS v25.0
+Set activeLoadset = view().getActiveLoadset()
+
+If activeLoadset.getTypeCode() = 0 Then
+    Set loadcase = activeLoadset
+    Set analysis = loadcase.getAnalysis()
+
+    Call analysis.solve(True)
+    Call database().openAllResults(False)
+End If
+
+' Display the results
+Call view().insertValuesLayer()
+Set valuesLayer = view().values()
+Call valuesLayer.setResultsTransformNone()
+Call valuesLayer.setResults(entity, component)
+Call valuesLayer.setShowAtBeamShellSlices()
+Call valuesLayer.setAssocOption("Single")
+
+
+' Print all results at the slices
+results = sliceUtil.getAllResults("abs")
+
+Set tw = getTextWindow()
+
+Call tw.writeLine(String(50, "-"))
+Call tw.writeLine("Beam/Shell Slice " & sliceUtil.getName() & " results:")
+Call tw.writeLine("Distance, Fx, Fy, Fz, Mx, My, Mz")
+
+' Each result row contains:
+' Fx, Fy, Fz, Mx, My, Mz, distance
+For r = LBound(results) To UBound(results)
+    Call tw.writeLine( _
+        results(r, 6) & ", " & _
+        results(r, 0) & ", " & _
+        results(r, 1) & ", " & _
+        results(r, 2) & ", " & _
+        results(r, 3) & ", " & _
+        results(r, 4) & ", " & _
+        results(r, 5) _
+    )
+Next

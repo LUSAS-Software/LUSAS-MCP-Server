@@ -1,0 +1,10 @@
+{
+    "servers": {
+        "lusas": {
+            "command": "python",
+            "args": [
+                "${workspaceFolder}\\src\\server.py"
+            ]
+        }
+    }
+}

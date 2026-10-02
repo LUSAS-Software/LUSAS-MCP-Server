@@ -1,0 +1,65 @@
+'Creates and assigns materials to lines and surfaces, and gets the features the material is assigned on
+$ENGINE=VBScript
+
+' Get existing line, surface
+Set line1 = db().getObject("line", 1) 'get line with ID 1
+surfaces1 = Array(db().getObject("surface", 1)) 'get surface with ID 1
+
+
+'Create Isotropic Steel Material
+
+' Create steel material attribute with properties (in model units)
+name = "Steel"
+E_mod = 210.0E9 ' Young's modulus
+nu = 0.3 ' Poisson's ratio
+density = 7849.13 ' Density
+alpha = 0.000012 ' Coefficient of thermal expansion
+Set steel_attr = db().createIsotropicMaterial(name, E_mod, nu, density)
+Call steel_attr.setValue("alpha", alpha)
+
+' Print material properties acquired from attribute
+Call getTextWindow().writeLine("Material " & name & " properties: " & steel_attr.getValue("E") & ", " + steel_attr.getValue("nu") & ", " + steel_attr.getValue("density") & ", " & steel_attr.getValue("alpha"))
+
+
+' Create Isotropic Steel Material from Library
+Set matLibModule = getExtModule("MaterialLibrary")
+
+name = "Steel from library"
+material = "Steel - Structural"
+region = "UK"
+standard = "EN1993-1-1:2005"
+grade = "Ungraded"
+
+' Call material library module to create material attribute from library
+' (0: success, 1: Invalid material type, 2: Invalid region, 3: Invalid standard, 4: Invalid grade, 5: Unknown error)
+ret = matLibModule.createMaterial(name, material, region, standard, grade)
+' Get created material attribute
+steel_attr2 = db().getAttribute("material", name)
+
+' Assign material to the line on loadcase 1
+steel_attr2.assignTo(line1, 1)
+
+
+'Create Isotropic Concrete Material from Library
+name = "Concrete from library"
+ret = matLibModule.createMaterial(name, "Concrete", "Europe", "EN1992-1-1:2004/2014", "C40/50")
+concrete_attr = db().getAttribute("material", name)
+
+' Print values added from the library to the attribute
+Call getTextWindow().writeLine("Material " & name & " properties: " + concrete_attr.getValue("ec3") + ", " + concrete_attr.getValue("fcd3") + ", " + concrete_attr.getValue("fck") + ", " + concrete_attr.getValue("fctm") + ", " + concrete_attr.getValue("ecu3") + ", " + concrete_attr.getValue("E3"))
+
+' Assign material to the surface on loadcase 1
+Call concrete_attr.assignTo(surfaces1, 1)
+
+
+'Get features (i.e. points, line, surfaces) where attribute is assigned
+
+' Get all objects on which the thickness attribute is assigned
+set getAsgn = newAssignment().setConsiderAllAssigns(True)
+set assignedObjSet = newObjectSet().add(concrete_attr, getAsgn)
+
+' To get the assigned objects for a specific loadcase, the loadcase can be specified with the setLoadset() method, for example:
+' set getAsgn = newAssignment().setLoadset("Loadcase 1")
+
+' Print number of geometries the attribute is assigned on
+Call getTextWindow().writeLine(concrete_attr.getName() & " attribute is assigned on " & assignedObjSet.count("all") & " features")

@@ -1,0 +1,15 @@
+{
+    "server": {
+        "name": "LUSAS MCP",
+        "version": "1.0.2"
+    },
+    "lusas": {
+        "version": "24.0"
+    },
+    "options": {
+        "read_only_mode": false,
+        "save_generated_scripts": false,
+		"log_filepath": "",
+		"allow_manual_images_return": false
+    }
+}

@@ -1,0 +1,53 @@
+'Extract results to Text/TXT or Excel/CSV using a Print Results Wizard (PRW)
+$ENGINE=VBScript
+
+' To successfully run the code below you must have a model solved.
+
+' Script results parameters
+prw_name = "Shell Results With Global Transform"
+export_dir = "C:\Temp\"
+
+
+'Create a print results wizard for thick shell element results
+
+' Shell Results
+Set prwAttr = db().createPrintResultsWizard(prw_name)
+
+' PRW Settings
+Call prwAttr.setResultsType("Components")
+Call prwAttr.setResultsOrder("Mesh")
+Call prwAttr.setResultsContent("Tabular")
+Call prwAttr.setResultsEntity("Force/Moment - Thick Shell")
+Call prwAttr.setExtent("Elements showing results", "")
+Call prwAttr.setResultsLocation("ElementNodal")
+Call prwAttr.setLoadcasesOption("Active") ' Active loadset only
+' Target Components
+components = Array("Nx","Ny","Nxy","Mx","My","Mxy","Sx","Sy")
+Call prwAttr.setComponents(components)
+
+Call prwAttr.setResultsTransformGlobal()
+Call prwAttr.showCoordinates(True)
+Call prwAttr.showExtremeResults(False)
+Call prwAttr.setSlice(False)
+Call prwAttr.setAllowDerived(False)
+Call prwAttr.setDisplayNow(False)
+Call prwAttr.setDecimalPlaces(3)
+Call prwAttr.setThreshold(1e-6)
+
+' Release the attribute object (for the shake of this example)
+' This variable can later be used instead of the "prwAttr" (provided that it not dereferenced with this command).
+Set prwAttr = Nothing 
+
+
+'Export the results defined by the Print Results Wizard
+
+' Get the Print Results Wizard attribute object
+Set prwAttr = db().getAttribute("Print Results Wizard", prw_name)
+
+' Display the table of results
+Set table = prwAttr.showResults()
+' Save the grid view to a file
+Call table.saveAs(export_dir & prw_name & "_results.txt", "Text")
+' Or save as Excel file
+'Call table.saveAs(export_dir & prw_name & "_results.xls", "Microsoft Excel")
+Call table.close()

@@ -1,0 +1,19 @@
+'Create a new LUSAS model
+$ENGINE=VBScript
+
+'(Optional) Check if a model is open and not saved
+If existsDatabase() and db().isModified() Then
+    Call getTextWindow().writeLine("A model is currently open with unsaved changes.")
+End If
+
+'Create a new model
+filename = "my_new_model.mdl"
+Call newProject("Structural", filename)
+
+'Set the analysis category & vertical axis
+Call db().setAnalysisCategory("3D")
+Call db().setVerticalDir("Z")
+
+'Set the unit system
+unitSet = getUnitSet("N,m,kg,s,C")
+Call db().setModelUnits(unitSet)

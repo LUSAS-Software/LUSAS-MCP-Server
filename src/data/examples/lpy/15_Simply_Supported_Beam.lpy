@@ -1,0 +1,54 @@
+#Create a simply supported concrete beam.
+$ENGINE=LPython
+
+# Throw error if a model is open and not saved
+if getDatabase().isModified():
+    raise Exception("This script will create a new model. Please save or close the current model and try again")
+
+
+# Create a new model
+newProject("Structural", "Simple_beam_model")
+
+db().setAnalysisCategory("3D")
+db().setVerticalDir("Z")
+
+# Set units to N and m
+db().setModelUnits(getUnitSet("N,m,kg,s,C"))
+
+# Create a new line in the model
+geometry_data = newGeometryData().setLowerOrderGeometryType("coordinates").setCreateMethod("straight").addCoords(0.0, 1.0, 0.0).addCoords(5.0, 1.0, 0.0)
+line1 = db().createLine(geometry_data).getObject("Line")
+
+# Mesh (1.0m element size)
+mesh = db().createMeshLine("Beam Mesh").setSize("BMI21", 1.0).assignTo(line1, 1)
+db().updateMesh()
+
+# Rectangular section
+db().createParametricSection("Sct1").setType("Rectangular Solid").setDimensions(["B", "D"], [0.4, 0.6])
+paramSection = db().createGeometricLine("LGeo1").setFromLibrary("Utilities", "", "Sct1", 0, 0, 0)
+paramSection.setValue("elementType", "3D Thick Beam")
+paramSection.assignTo(line1, 1)
+
+# Concrete material
+db().createIsotropicMaterial("Concrete", 35.0E9, 0.2, 2.54842E3).assignTo(line1, 1)
+
+# Pin supports at line ends
+line_ends_objectset = newObjectSet().add([line1.getStartPoint(), line1.getEndPoint()])
+db().createSupportStructural("Pinned").setStructural("R", "R", "R", "F", "F", "F").assignTo(line_ends_objectset, 1)
+
+# Apply UDL
+db().createLoadingGlobalDistributed("GlbD1").setGlobalDistributed("Length", 0, 0, -4000 * 2).assignTo(line1, 1)
+
+
+# Solve and set the contour layer to show the user defined result "isCracked" with a two tone contour plot
+db().getAnalysis("Analysis 1").solve(False)
+db().openAllResults(False)
+
+# Add the contours layer to the view if it does not exist and set it to deflections
+if not view().existsContoursLayer():
+    view().insertContoursLayer()
+view().contours().setResults("Displacement", "RSLT")
+view().contours().chooseSettings(1)
+
+# Set top-left-front view (isometric)
+view().setIsometric()

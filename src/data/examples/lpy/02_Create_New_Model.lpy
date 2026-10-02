@@ -1,0 +1,19 @@
+#Create a new LUSAS model
+$ENGINE=LPython # type: ignore
+
+#Check if an open model is saved
+if existsDatabase() and getDatabase().isModified():
+    raise Exception("Save or close the current model before running this code")
+
+#Create a new model
+filename = "my_new_model.mdl"
+newProject("Structural", filename)
+
+#Set the analysis category & vertical axis
+db().setAnalysisCategory("3D")
+db().setVerticalDir("Z")
+
+#Set the unit system
+db().setModelUnits(getUnitSet("kN,m,t,s,C"))
+
+getTextWindow().writeLine(f"New model created: {filename}")

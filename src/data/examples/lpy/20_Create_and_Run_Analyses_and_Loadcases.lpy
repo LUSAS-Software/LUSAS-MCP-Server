@@ -1,0 +1,28 @@
+#Creates analyses, loadcases and solves them
+$ENGINE=LPython
+
+# Create new structural analysis
+analysisName = "New Structural Analysis"
+structAnalysis = db().createAnalysisStructural(analysisName, True)
+
+# Create additional loadcase in the analysis
+newLoadcase = db().createLoadcase("Self-weight", analysisName)
+# Enable gravity in self-weight loadcase
+newLoadcase.addGravity(True)
+newLoadcase.setGravityFactor(1.0)
+
+# Get list of loadcase objects from analysis
+loadcases : list['IFLoadcase'] = structAnalysis.getLoadcases()
+
+# Print loadcase names
+getTextWindow().writeLine(f"Analysis {structAnalysis.getName()} loadcases:")
+for loadcase in loadcases:
+    getTextWindow().writeLine(f" - {loadcase.getID()}: {loadcase.getName()}")
+
+
+# Solve structural analysis
+
+db().getAnalysis(analysisName).solve(False)
+
+# Open available results
+db().openAllResults(False)
