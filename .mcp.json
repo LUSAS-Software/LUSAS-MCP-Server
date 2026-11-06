@@ -1,0 +1,14 @@
+{
+	"mcpServers": {
+		"lusas": {
+			"type": "stdio",
+			"command": "python",
+			"args": [
+				"C:\\Users\\Apostolos\\Documents\\GitHub\\LUSAS-MCP-Server\\src\\server.py"
+			],
+			"tools": [
+				"*"
+			]
+		}
+	}
+}

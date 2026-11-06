@@ -34,7 +34,7 @@ The server will work with the free [evaluation licence](https://www.lusas.com/ev
 
 ## Installation Instructions
 Install required python dependencies:
-1. Press Win + R, type CMD and press Enter (this opens the command prompt)
+1. Shift right click inside the repository folder and select `Open Powershell window here`
 2. Run the command (right click to paste + enter to run):
 
     `pip install -r requirements.txt`
@@ -125,22 +125,25 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 ### Visual Studio Code / GitHub Copilot
 
 1. Download this repository (through the green `Code` button at the top of the page).
-2. This repository includes `.vscode/mcp.json`:
+2. This repository includes `.mcp.json`:
 
     ```json
     {
-        "servers": {
+        "mcpServers": {
             "lusas": {
+                "type": "stdio",
                 "command": "python",
                 "args": [
-                    "${workspaceFolder}\\src\\server.py"
+                    "C:\\Users\\Apostolos\\Documents\\GitHub\\LUSAS-MCP-Server\\src\\server.py"
+                ],
+                "tools": [
+                    "*"
                 ]
             }
         }
     }
     ```
-3. Open the repository folder in VS Code.
-4. Open `.vscode/mcp.json`, and start the server from the MCP controls.
+3. Open the repository folder in VS Code automatically loads the MCP server for the integrated assistant.
 
 
 ## Exposed MCP Tools
