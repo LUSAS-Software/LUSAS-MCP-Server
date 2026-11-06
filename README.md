@@ -125,25 +125,22 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 ### Visual Studio Code / GitHub Copilot
 
 1. Download this repository (through the green `Code` button at the top of the page).
-2. This repository includes `.mcp.json`:
-
+2. This repository includes `.mcp.json`, which loads the MCP server automatically when the MCP server repository folder is open in VSCode, for use with the integrated assistant.
+3. To enable the MCP server globally in VSCode, add this to your `mcp-config.json` (located at `%userprofile%\.copilot\`).
     ```json
     {
         "mcpServers": {
-            "lusas": {
+            "lusas-mcp-server": {
+                "tools": ["*"],
                 "type": "stdio",
                 "command": "python",
-                "args": [
-                    "C:\\Users\\Apostolos\\Documents\\GitHub\\LUSAS-MCP-Server\\src\\server.py"
-                ],
-                "tools": [
-                    "*"
-                ]
+                "args": ["C:\\path\\to\\LUSAS-MCP-Server\\src\\server.py"]
             }
         }
     }
     ```
-3. Open the repository folder in VS Code automatically loads the MCP server for the integrated assistant.
+4. Replace `C:\\path\\to\\LUSAS-MCP-Server` with the path to this repository, ensure `\\` are used between directories. If the `mcpServers` exists, only add the part within the curly brackets.
+5. Restart OpenCode.
 
 
 ## Exposed MCP Tools
