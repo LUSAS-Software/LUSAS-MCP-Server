@@ -140,7 +140,7 @@ python .\src\server.py --config-filepath C:\path\to\config.json
     }
     ```
 4. Replace `C:\\path\\to\\LUSAS-MCP-Server` with the path to this repository, ensure `\\` are used between directories. If the `mcpServers` exists, only add the part within the curly brackets.
-5. Restart OpenCode.
+5. Restart VSCode.
 
 
 ## Exposed MCP Tools
