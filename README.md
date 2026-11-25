@@ -66,7 +66,7 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 
 1. Download `lusas-mcp-X.X.X.mcpb` from [releases](https://github.com/LUSAS-Software/LUSAS-MCP-Server/releases/latest).
 2. Open `lusas-mcp-X.X.X.mcpb` with Claude Desktop to install the MCP server.
-3. Proceed with the installation.
+3. Alternatively, open Claude and go to `File > Settings > Desktop app > Manage Extensions` and drag and drop the `lusas-mcp-X.X.X.mcpb` file, then proceed with the installation.
 4. The server config can then be found at `%APPDATA%\Claude\Claude Extensions\local.mcpb.lusas.lusas-mcp\src\config.json`.
 
 ### Claude Desktop (Manual)
@@ -90,7 +90,21 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 4. Replace `C:\\path\\to\\LUSAS-MCP-Server` with the path to this repository, ensuring `\\` are used between directories.
 5. Restart Claude Desktop after editing the config (from the tray icon, right click > Quit).
 
-### OpenAI (aka Codex)
+### Google Antigravity CLI / Gemini
+
+1. Download this repository and install its Python dependencies as described above. Ensure `python` is available on your PATH in Antigravity.
+2. Before installing, edit `src/config.json` to select your installed LUSAS version and any other desired options.
+3. In PowerShell, run from the repository folder:
+
+    ```powershell
+    agy plugin install .
+    ```
+
+4. Open Antigravity and check that the `lusas-mcp` plugin in enabled under `Customisations` > `Installed`.
+
+The installed plugin has its own copy of `src/config.json` usually found at `%userprofile%\.gemini\config\plugins\lusas-mcp\src`.
+
+### ChatGPT app (aka Codex, OpenAI)
 
 1. Download this repository (through the green `Code` button at the top of the page).
 2. Add this to your Codex `config.toml` (located at `%userprofile%\.codex\`):

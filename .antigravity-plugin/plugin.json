@@ -1,0 +1,15 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "lusas-mcp",
+  "displayName": "LUSAS",
+  "version": "1.0.2",
+  "description": "Inspect and automate LUSAS finite element models and search LUSAS engineering documentation.",
+  "logo": "icon.png",
+  "author": {
+    "name": "LUSAS",
+    "url": "https://www.lusas.com"
+  },
+  "repository": "https://github.com/LUSAS-Software/LUSAS-MCP-Server",
+  "license": "Proprietary",
+  "keywords": ["lusas", "fea", "structural-analysis", "engineering"]
+}

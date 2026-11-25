@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lusas": {
+      "command": "python",
+      "args": ["${PLUGIN_ROOT}/src/server.py"],
+      "cwd": "${PLUGIN_DATA}"
+    }
+  }
+}
