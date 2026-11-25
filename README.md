@@ -90,9 +90,10 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 4. Replace `C:\\path\\to\\LUSAS-MCP-Server` with the path to this repository, ensuring `\\` are used between directories.
 5. Restart Claude Desktop after editing the config (from the tray icon, right click > Quit).
 
-### Google Antigravity CLI / Gemini
 
-1. Download this repository and install its Python dependencies as described above. Ensure `python` is available on your PATH in Antigravity.
+### Google Antigravity CLI / Gemini (Plugin)
+
+1. Download this repository (through the green `Code` button at the top of the page).
 2. Before installing, edit `src/config.json` to select your installed LUSAS version and any other desired options.
 3. In PowerShell, run from the repository folder:
 
@@ -103,6 +104,27 @@ python .\src\server.py --config-filepath C:\path\to\config.json
 4. Open Antigravity and check that the `lusas-mcp` plugin in enabled under `Customisations` > `Installed`.
 
 The installed plugin has its own copy of `src/config.json` usually found at `%userprofile%\.gemini\config\plugins\lusas-mcp\src`.
+
+
+### Google Antigravity / Gemini (Manual)
+
+1. Download this repository (through the green `Code` button at the top of the page).
+2. Edit `mcp_config.json` located at `%userprofile%\.gemini\config\mcp_config.json` adding:
+
+    ```json
+    {
+        "mcpServers": {
+            "lusas": {
+                "command": "python",
+                "args": [
+                    "C:\\path\\to\\LUSAS-MCP-Server\\src\\server.py"
+                ]
+            }
+        }
+    }
+    ```
+3. Open Antigravity and check that the `lusas-mcp` MCP server is listed under `Customisations` > `Installed` > `MCP Servers`.
+
 
 ### ChatGPT app (aka Codex, OpenAI)
 
