@@ -69,7 +69,7 @@ The MCP server can be connected to any AI desktop app that supports MCP servers 
 
 ### Claude Desktop (MCPB Package)
 
-[![Claude MCP configuration video](https://img.youtube.com/vi/HekZxdw_nrU/default.jpg)](https://youtu.be/HekZxdw_nrU)
+[![Claude MCP configuration video](https://img.youtube.com/vi/HekZxdw_nrU/hqdefault.jpg)](https://youtu.be/HekZxdw_nrU)
 
 1. Download `lusas-mcp-X.X.X.mcpb` from [releases](https://github.com/LUSAS-Software/LUSAS-MCP-Server/releases/latest).
 2. Open `lusas-mcp-X.X.X.mcpb` with Claude Desktop to install the MCP server.
@@ -115,7 +115,7 @@ The installed plugin has its own copy of `src/config.json` usually found at `%us
 
 ### Google Antigravity / Gemini (Manual)
 
-[![Antigravity MCP configuration video](https://img.youtube.com/vi/LlHvJ6dzsw4/default.jpg)](https://youtu.be/LlHvJ6dzsw4)
+[![Antigravity MCP configuration video](https://img.youtube.com/vi/LlHvJ6dzsw4/hqdefault.jpg)](https://youtu.be/LlHvJ6dzsw4)
 
 1. Download this repository (through the green `Code` button at the top of the page).
 2. Edit `mcp_config.json` located at `%userprofile%\.gemini\config\mcp_config.json` adding:
@@ -137,7 +137,7 @@ The installed plugin has its own copy of `src/config.json` usually found at `%us
 
 ### ChatGPT app (aka Codex, OpenAI)
 
-[![ChatGPT MCP configuration video](https://img.youtube.com/vi/B4oQjNhxfZA/default.jpg)](https://youtu.be/B4oQjNhxfZA)
+[![ChatGPT MCP configuration video](https://img.youtube.com/vi/B4oQjNhxfZA/hqdefault.jpg)](https://youtu.be/B4oQjNhxfZA)
 
 1. Download this repository (through the green `Code` button at the top of the page).
 2. Add this to your Codex `config.toml` (located at `%userprofile%\.codex\`):
@@ -171,7 +171,7 @@ The installed plugin has its own copy of `src/config.json` usually found at `%us
 
 ### Visual Studio Code / GitHub Copilot
 
-[![VS Code MCP configuration video](https://img.youtube.com/vi/2LnIT5T-jBY/default.jpg)](https://youtu.be/2LnIT5T-jBY)
+[![VS Code MCP configuration video](https://img.youtube.com/vi/2LnIT5T-jBY/hqdefault.jpg)](https://youtu.be/2LnIT5T-jBY)
 
 1. Download this repository (through the green `Code` button at the top of the page).
 2. This repository includes `.mcp.json`, which loads the MCP server automatically when the MCP server repository folder is open in VSCode, for use with the integrated assistant.
